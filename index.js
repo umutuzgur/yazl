@@ -64,7 +64,8 @@ ZipFile.prototype.addReadStreamLazy = function(metadataPath, options, getReadStr
   }
   if (options == null) options = {};
   metadataPath = validateMetadataPath(metadataPath, false);
-
+  if (shouldIgnoreAdding(self)) return;
+  var entry = new Entry(metadataPath, false, options);
   if (options.compressedSize) {
     entry.compressedSize = options.compressedSize
   }
@@ -77,8 +78,6 @@ ZipFile.prototype.addReadStreamLazy = function(metadataPath, options, getReadStr
   if (options.compressionMethod) {
     entry.compressionLevel = options.compressionLevel
   }
-  if (shouldIgnoreAdding(self)) return;
-  var entry = new Entry(metadataPath, false, options);
   self.entries.push(entry);
   entry.setFileDataPumpFunction(function() {
     entry.state = Entry.FILE_DATA_IN_PROGRESS;
