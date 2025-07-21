@@ -65,6 +65,18 @@ ZipFile.prototype.addReadStreamLazy = function(metadataPath, options, getReadStr
   if (options == null) options = {};
   metadataPath = validateMetadataPath(metadataPath, false);
 
+  if (options.compressedSize) {
+    entry.compressedSize = options.compressedSize
+  }
+  if (options.uncompressedSize) {
+    entry.uncompressedSize = options.uncompressedSize
+  }
+  if (options.crc32) {
+    entry.crc32 = options.crc32
+  }
+  if (options.compressionMethod) {
+    entry.compressionLevel = options.compressionLevel
+  }
   if (shouldIgnoreAdding(self)) return;
   var entry = new Entry(metadataPath, false, options);
   self.entries.push(entry);
@@ -170,6 +182,16 @@ function writeToOutputStream(self, buffer) {
 }
 
 function pumpFileDataReadStream(self, entry, readStream) {
+  if (entry.crc32) {
+    readStream.pipe(self.outputStream, {end: false});
+    readStream.on("end", function() {
+      self.outputStreamCursor += entry.compressedSize;
+      writeToOutputStream(self, entry.getDataDescriptor());
+      entry.state = Entry.FILE_DATA_DONE;
+      pumpEntries(self);
+    });
+    return
+  }
   var crc32Watcher = new Crc32Watcher();
   var uncompressedSizeCounter = new ByteCounter();
   var compressor = entry.compressionLevel !== 0 ? new zlib.DeflateRaw({level:entry.compressionLevel}) : new PassThrough();
