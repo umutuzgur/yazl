@@ -75,7 +75,7 @@ ZipFile.prototype.addReadStreamLazy = function(metadataPath, options, getReadStr
   if (options.crc32) {
     entry.crc32 = options.crc32
   }
-  if (options.compressionMethod) {
+  if (options.compressionLevel) {
     entry.compressionLevel = options.compressionLevel
   }
   self.entries.push(entry);
